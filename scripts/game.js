@@ -1,8 +1,32 @@
+function resetGameStatus() {
+    activePlayer = 0;
+    currentRound = 1;
+    gameIsOver = false;
+
+    gameOverElement.firstElementChild.innerHTML = 'You won, <span id="winner-name">PLAYER NAME </span>!'
+    gameOverElement.style.display = 'none';
+
+    //Para vaciar los datos de gameData:
+    let gameBoardIndex = 0; 
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            gameData[i][j] = 0;
+            //Para tb vaciar los datos en el browser:
+            const gameBoardItemElement = gameBoardElement.children[gameBoardIndex];
+            gameBoardItemElement.textContent = '';
+            gameBoardItemElement.classList.remove('disabled');
+            gameBoardIndex++;
+        }
+    }
+}
+
 function startNewGame() {
     if (players[0].name === '' || players[1].name === '') { //validar players
         alert('duh!!!')
         return;
     }
+
+    resetGameStatus();//Vacia el tablero y los datos del juego anterior, menos los nombres
 
     activePlayerNameElement.textContent = players[activePlayer].name;
     gameAreaElement.style.display = 'block';
@@ -24,7 +48,7 @@ function selectGameField(event) {
     const selectedColumn = selectedField.dataset.col - 1; //para convertirlo a num(es string)
     const selectedRow = selectedField.dataset.row - 1;
 
-    if (gameData[selectedRow][selectedColumn] > 0) {
+    if (gameData[selectedRow][selectedColumn] > 0 || gameIsOver) {
         alert('Duh!!');
         return;
     }
@@ -37,6 +61,10 @@ function selectGameField(event) {
 
     const winnerId = checkForGameOver();
     console.log(winnerId);
+    //Dado que se returna winnerId=0 si no hay ni ganador ni empate:
+    if (winnerId !== 0) {
+        endGame(winnerId);
+    }
 
     currentRound++;
     switchPlayer();
@@ -75,4 +103,21 @@ function checkForGameOver() {
         return -1;
     }
     return 0;
+}
+
+function endGame(winnerId) {
+    gameIsOver = true;
+    gameOverElement.style.display = 'block';
+    //Primero, comprueba que no sea un empate(-1):
+    if (winnerId > 0) {
+    //recupera 'name' del array, desde 'winnerId', pero con un id de 0 o 1:
+    const winnerName = players[winnerId - 1].name;
+    //para acceder al elem span:
+    gameOverElement.firstElementChild.firstElementChild.textContent = winnerName;
+    }
+    else {
+        //en el h2, presenta un texto:
+        gameOverElement.firstElementChild.textContent = 'It\s a draw!';
+    }
+    
 }
